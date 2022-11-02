@@ -1,5 +1,5 @@
 server:
-  port: 9000
+  port: 9001
 
 eureka:
   client:
@@ -10,19 +10,57 @@ eureka:
 
 spring:
   application:
-    name: apigateway-service
+    name: guacamole-gateway
   cloud:
     gateway:
+      httpclient:
+        connect-timeout: 20000
+        response-timeout: 20s
+        pool:
+          max-connections: 500
+          type: FIXED
+          acquire-timeout: 5000
+          max-idle-time: 10000
+          max-life-time: 10000
+        filter:
+          request-rate-limitor:
+            deny-empty-key: false
+            
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedHeaders:
+            allowedOrigins: "*"
+            allowedMethods:
+              - POST
+              - GET
+              - PUT
+              - DELETE
+              - HEAD
+              - OPTIONS
+              - PATCH
+              
       routes:
-        - id: spring-service
+        - id: guacamole-back
           uri: lb://SPRING-SERVICE
           predicates:
-            - Path=/spring-service/**
-        - id: flask-service
+            - Path=/guacamole-back/**
+        - id: guacamole-test
           uri: lb://FLASK-SERVICE
           predicates:
-            - Path=/flask-service/**
-        - id: go-service
+            - Path=/guacamole-test/**
+        - id: guacamole-limit
           uri: lb://GO-SERVICE
           predicates:
-            - Path=/go-service/**
+            - Path=/guacamole-limit/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: ["health", "info"]
+  security:
+    enabled: false
+endpoints:
+  health:
+    sensitive: false
