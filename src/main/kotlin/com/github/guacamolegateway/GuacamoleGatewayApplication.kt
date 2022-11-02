@@ -7,5 +7,6 @@ import org.springframework.boot.runApplication
 class GuacamoleGatewayApplication
 
 fun main(args: Array<String>) {
+	println("start Application. Hello")
 	runApplication<GuacamoleGatewayApplication>(*args)
 }
