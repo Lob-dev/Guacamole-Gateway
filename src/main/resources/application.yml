@@ -1,0 +1,66 @@
+server:
+  port: 9001
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defalutZone: http://localhost:8761/eureka
+
+spring:
+  application:
+    name: guacamole-gateway
+  cloud:
+    gateway:
+      httpclient:
+        connect-timeout: 20000
+        response-timeout: 20s
+        pool:
+          max-connections: 500
+          type: FIXED
+          acquire-timeout: 5000
+          max-idle-time: 10000
+          max-life-time: 10000
+        filter:
+          request-rate-limitor:
+            deny-empty-key: false
+            
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedHeaders:
+            allowedOrigins: "*"
+            allowedMethods:
+              - POST
+              - GET
+              - PUT
+              - DELETE
+              - HEAD
+              - OPTIONS
+              - PATCH
+              
+      routes:
+        - id: guacamole-back
+          uri: lb://SPRING-SERVICE
+          predicates:
+            - Path=/guacamole-back/**
+        - id: guacamole-test
+          uri: lb://FLASK-SERVICE
+          predicates:
+            - Path=/guacamole-test/**
+        - id: guacamole-limit
+          uri: lb://GO-SERVICE
+          predicates:
+            - Path=/guacamole-limit/**
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: ["health", "info"]
+  security:
+    enabled: false
+endpoints:
+  health:
+    sensitive: false
